@@ -706,7 +706,13 @@
           if (!answerChecked) checkAnswer(true);
         }
       });
-      document.getElementById("next-button").addEventListener("click", nextCharacter);
+      document.getElementById("next-button").addEventListener("click", () => {
+        if (!answerChecked) {
+          checkAnswer(true);
+          return;
+        }
+        nextCharacter();
+      });
       hintToggleButton.addEventListener("click", () => {
         hintsEnabled = !hintsEnabled;
         hintToggleButton.setAttribute("aria-pressed", String(hintsEnabled));
