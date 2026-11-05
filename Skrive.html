@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2eb">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <title>Morse — Skrive</title>
+  <style>
+    :root {
+      color-scheme: light;
+      scrollbar-gutter: stable;
+      --paper: #f5f2eb;
+      --card: #fffefa;
+      --ink: #1d2927;
+      --muted: #78817b;
+      --line: #e7e4dc;
+      --green: #245b4e;
+      --green-dark: #193f37;
+      --mint: #e8f0e9;
+      --orange: #e87850;
+      --shadow: 0 18px 48px rgb(34 45 39 / 7%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { overflow-x: clip; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, textarea { font: inherit; }
+    button, a, textarea { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+    .shell { width: min(900px, calc(100% - 48px)); margin: 0 auto; }
+    .topbar {
+      width: min(1120px, calc(100% - 40px));
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .16em;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      border-radius: 10px;
+      background: var(--green);
+    }
+    .brand-mark span { display: block; height: 3px; border-radius: 5px; background: white; }
+    .brand-mark span:nth-child(1), .brand-mark span:nth-child(3) { width: 5px; }
+    .brand-mark span:nth-child(2) { width: 13px; }
+    .nav { display: flex; align-items: center; gap: 30px; }
+    .nav a {
+      color: #647069;
+      font-size: 13px;
+      font-weight: 650;
+      text-decoration: none;
+      transition: color .18s ease;
+    }
+    .nav a:hover, .nav a[aria-current="page"] { color: var(--green); }
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+    }
+    .menu-toggle span { width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+    main { padding: 10px 0 65px; }
+    .eyebrow { margin: 0 0 14px; color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }
+    h1 {
+      margin: 0 0 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(38px, 5.2vw, 58px);
+      font-weight: 500;
+      letter-spacing: -.055em;
+      line-height: 1.05;
+    }
+    .intro { max-width: 580px; margin: 0; color: #707972; font-size: 14px; line-height: 1.7; }
+    .translator {
+      margin-top: 30px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 20px; }
+    .mode-button {
+      min-height: 45px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 750;
+      transition: background .18s ease, color .18s ease;
+    }
+    .mode-button[aria-pressed="true"] { border-color: var(--green); background: var(--green); color: white; }
+    .settings-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .settings-row label { color: #56615a; font-size: 12px; font-weight: 750; }
+    select {
+      min-height: 38px;
+      padding: 0 32px 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--card);
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+    }
+    .score-counters { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+    .streak, .high-score {
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: var(--mint);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .high-score { background: #f1eee5; color: #74633b; }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .field label { display: block; color: #56615a; font-size: 12px; font-weight: 750; }
+    .field-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .field-result { color: var(--green); font-size: 12px; font-weight: 750; text-align: right; }
+    .field-result.incorrect { color: #aa5439; }
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 145px;
+      margin-top: 8px;
+      padding: 13px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fffefa;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    textarea[readonly] { background: #f8f6f0; color: var(--green-dark); }
+    #morse-input { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 17px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+    .button {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--green);
+      border-radius: 9px;
+      background: var(--green);
+      color: white;
+      font-size: 12px;
+      font-weight: 750;
+      transition: background .18s ease, transform .18s ease;
+    }
+    .button:hover { transform: translateY(-1px); background: var(--green-dark); }
+    .button.secondary { border-color: var(--line); background: var(--card); color: var(--green); }
+    .button.secondary:hover { background: var(--mint); }
+    .button[hidden] { display: none; }
+    .morse-input-buttons { display: none; }
+    .morse-input-button:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+    .status { min-height: 24px; margin: 15px 0 0; color: var(--muted); font-size: 14px; font-weight: 750; }
+    .status.correct { color: var(--green); }
+    .status.incorrect { color: #aa5439; }
+    .footer { padding: 18px 0 25px; border-top: 1px solid var(--line); color: #879088; font-size: 10px; text-align: center; }
+    @media (max-width: 600px) {
+      .shell { width: min(100% - 30px, 900px); }
+      .topbar { min-height: 67px; }
+      .brand { font-size: 13px; }
+      .nav { gap: 14px; }
+      .nav a { font-size: 11px; }
+      main { padding: 5px 0 45px; }
+      .translator { margin-top: 22px; padding: 18px; }
+      .fields { grid-template-columns: 1fr; gap: 12px; }
+      textarea { min-height: 95px; }
+      .morse-input-buttons {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .translator[data-mode="morse"] .morse-input-buttons { display: grid; }
+      .morse-input-button {
+        min-height: 58px;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: #f8f9f8;
+        color: var(--ink);
+        font: 700 32px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+        touch-action: manipulation;
+      }
+      .morse-input-button:active { background: var(--mint); }
+      .settings-row { flex-wrap: wrap; }
+      .score-counters { margin-left: 0; }
+      .controls { align-items: stretch; }
+    }
+    @media (max-width: 700px) {
+      .topbar { position: relative; flex-wrap: wrap; justify-content: space-between; padding: 8px 0; }
+      .menu-toggle { display: flex; }
+      .topbar .nav { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding-top: 8px; }
+      .topbar.menu-open .nav { display: flex; }
+      .topbar .nav a { padding: 12px 10px; border-top: 1px solid var(--line); font-size: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="Lytte.html" aria-label="Morse hjem">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      MORSE
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Åpne meny" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="main-nav" aria-label="Hovedmeny">
+      <a href="Lytte.html#practice">Lytte</a>
+      <a href="Kodeoversikt.html">Kodeoversikt</a>
+      <a href="Skrive.html" aria-current="page">Skrive</a>
+      <a href="Lyn%20trening.html">Lyn trening</a>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="translator" aria-label="Morsequiz" data-mode="word">
+      <div class="mode-selector" role="group" aria-label="Velg øvelse">
+        <button class="mode-button" id="word-mode" type="button" aria-pressed="true">Ord</button>
+        <button class="mode-button" id="morse-mode" type="button" aria-pressed="false">Morse</button>
+      </div>
+      <div class="settings-row">
+        <label for="word-length">Antall bokstaver</label>
+        <select id="word-length">
+          <option value="1">1 bokstav</option>
+          <option value="2">2 bokstaver</option>
+          <option value="3">3 bokstaver</option>
+          <option value="4">4 bokstaver</option>
+          <option value="5">5 bokstaver</option>
+          <option value="6" selected>6 bokstaver</option>
+          <option value="7">7 bokstaver</option>
+          <option value="8">8 bokstaver</option>
+          <option value="9">9 bokstaver</option>
+          <option value="10">10 bokstaver</option>
+        </select>
+        <div class="score-counters" aria-label="Poengsummer">
+          <div class="streak" aria-live="polite">Rekke: <span id="streak">0</span> 🔥</div>
+          <div class="high-score" aria-live="polite">Beste: <span id="high-score">0</span> 🏆</div>
+        </div>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="plain-input">Tekst</label>
+          <textarea class="answer-input" id="plain-input" placeholder="Ordet vises her" aria-describedby="status"></textarea>
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label for="morse-input">Morsekode</label>
+            <span class="field-result" id="morse-result" aria-live="polite"></span>
+          </div>
+          <textarea class="answer-input" id="morse-input" placeholder="Morsekoden vises her" aria-describedby="status"></textarea>
+        </div>
+      </div>
+      <div class="morse-input-buttons" role="group" aria-label="Morseknapper">
+        <button class="morse-input-button" type="button" data-morse-symbol="." aria-label="Legg til prikk">.</button>
+        <button class="morse-input-button" type="button" data-morse-symbol="-" aria-label="Legg til strek">-</button>
+      </div>
+      <div class="controls">
+        <button class="button secondary" id="new-question-button" type="button" hidden>Ny oppgave</button>
+        <button class="button" id="check-button" type="button">Sjekk svar</button>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const MORSE = {
+        A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....",
+        I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.", O: "---", P: ".--.",
+        Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+        Y: "-.--", Z: "--..", 0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-",
+        5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----.",
+        ".": ".-.-.-", ",": "--..--", "?": "..--..", "'": ".----.", "!": "-.-.--",
+        "/": "-..-.", "(": "-.--.", ")": "-.--.-", "&": ".-...", ":": "---...",
+        ";": "-.-.-.", "=": "-...-", "+": ".-.-.", "-": "-....-", "_": "..--.-",
+        "\"": ".-..-.", "$": "...-..-", "@": ".--.-.", "Æ": ".-.-", "Ø": "---.", "Å": ".--.-"
+      };
+      const WORDS = [
+        "en", "to", "du", "vi", "nå", "se", "ro", "is", "øy", "gå",
+        "sol", "hus", "bil", "bok", "mat", "tid", "dyr", "lys", "hav", "øre", "sko", "dag", "lam", "rev",
+        "katt", "hund", "fisk", "melk", "barn", "stol", "vind", "natt", "hånd", "land", "kopp", "vann",
+        "skole", "radio", "hytte", "kaffe", "lampe", "norge", "papir", "glede", "kveld", "epler", "skinn",
+        "sommer", "vinter", "morgen", "venner", "hilsen", "arbeid", "sender", "lytter", "blomst", "bølger", "stille",
+        "familie", "bokstav", "alfabet", "melding", "sending", "morsomt", "stjerner", "friluft",
+        "spørsmål", "solskinn", "radioene", "kodelære", "skrivebok", "lyttetest",
+        "morsekode", "signalord", "vinterdag", "nordlyset", "oppdagelse", "lærerglede",
+        "bokstavene", "morseprøve", "lytteøvelse", "morgensolen"
+      ];
+      const LETTERS = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ"];
+      const STREAK_KEY = "morse-translator-streak-v1";
+      const plainInput = document.getElementById("plain-input");
+      const morseInput = document.getElementById("morse-input");
+      const status = document.getElementById("status");
+      const morseResult = document.getElementById("morse-result");
+      const wordModeButton = document.getElementById("word-mode");
+      const morseModeButton = document.getElementById("morse-mode");
+      const lengthSelect = document.getElementById("word-length");
+      const checkButton = document.getElementById("check-button");
+      const newQuestionButton = document.getElementById("new-question-button");
+      const streakDisplay = document.getElementById("streak");
+      const highScoreDisplay = document.getElementById("high-score");
+      const translator = document.querySelector(".translator");
+      let mode = "word";
+      let currentWord = "";
+      let checked = false;
+      let streak = loadStreak();
+      let highScore = loadHighScore();
+
+      function loadStreak() {
+        try {
+          const value = Number(localStorage.getItem(STREAK_KEY));
+          return Number.isInteger(value) && value >= 0 ? value : 0;
+        } catch (error) {
+          console.error("Kunne ikke laste inn øvingsrekken.", error);
+          return 0;
+        }
+      }
+
+      function loadHighScore() {
+        try {
+          const value = Number(localStorage.getItem("morse-translator-high-score-v1"));
+          return Number.isInteger(value) && value >= 0 ? value : 0;
+        } catch (error) {
+          console.error("Kunne ikke laste inn den beste rekken.", error);
+          return 0;
+        }
+      }
+
+      function saveStreak() {
+        try {
+          localStorage.setItem(STREAK_KEY, String(streak));
+        } catch (error) {
+          console.error("Kunne ikke lagre øvingsrekken.", error);
+        }
+      }
+
+      function saveHighScore() {
+        try {
+          localStorage.setItem("morse-translator-high-score-v1", String(highScore));
+        } catch (error) {
+          console.error("Kunne ikke lagre den beste rekken.", error);
+        }
+      }
+
+      function setStreak(value) {
+        streak = value;
+        streakDisplay.textContent = String(streak);
+        saveStreak();
+        if (streak > highScore) {
+          highScore = streak;
+          highScoreDisplay.textContent = String(highScore);
+          saveHighScore();
+        }
+      }
+
+      function encode(word) {
+        return [...word].map((letter) => MORSE[letter]).join(" ");
+      }
+
+      function normalizeMorse(value) {
+        return value
+          .replace(/[•·]/g, ".")
+          .replace(/[−–—]/g, "-")
+          .replace(/\s+/g, "");
+      }
+
+      function nextQuestion() {
+        const length = Number(lengthSelect.value);
+        const wordsForLength = length === 1
+          ? LETTERS
+          : WORDS.filter((word) => [...word].length === length);
+        if (wordsForLength.length === 0) {
+          status.textContent = `Ingen ord tilgjengelig med ${length} bokstaver.`;
+          status.className = "status incorrect";
+          return;
+        }
+
+        const choices = wordsForLength.filter((word) => word !== currentWord);
+        const wordPool = choices.length > 0 ? choices : wordsForLength;
+        currentWord = wordPool[Math.floor(Math.random() * wordPool.length)].toUpperCase();
+        const pattern = encode(currentWord);
+        checked = false;
+        status.textContent = "";
+        status.className = "status";
+        status.hidden = false;
+        morseResult.textContent = "";
+        morseResult.className = "field-result";
+        checkButton.hidden = false;
+        newQuestionButton.hidden = true;
+        plainInput.readOnly = mode === "morse";
+        morseInput.readOnly = mode === "word";
+        morseInput.inputMode = mode === "morse" ? "none" : "text";
+        plainInput.value = mode === "word" ? "" : currentWord;
+        morseInput.value = mode === "word" ? pattern : "";
+        const answerName = length === 1 ? "bokstaven" : "ordet";
+        plainInput.placeholder = mode === "word"
+          ? `Skriv ${answerName} du hører i morsekoden`
+          : `${answerName.charAt(0).toUpperCase()}${answerName.slice(1)} du skal oversette`;
+        morseInput.placeholder = mode === "word" ? "Skriv prikker og streker sammenhengende" : "Skriv morsekoden her";
+        (mode === "word" ? plainInput : morseInput).focus();
+      }
+
+      function setMode(nextMode) {
+        mode = nextMode;
+        translator.dataset.mode = mode;
+        wordModeButton.setAttribute("aria-pressed", String(mode === "word"));
+        morseModeButton.setAttribute("aria-pressed", String(mode === "morse"));
+        nextQuestion();
+      }
+
+      function checkAnswer() {
+        if (checked) return;
+        const answer = mode === "word" ? plainInput.value : morseInput.value;
+        if (!answer.trim()) {
+          const message = "Skriv inn et svar først.";
+          if (mode === "morse") {
+            morseResult.textContent = message;
+            morseResult.className = "field-result incorrect";
+            status.hidden = true;
+          } else {
+            status.textContent = message;
+            status.className = "status incorrect";
+          }
+          (mode === "word" ? plainInput : morseInput).focus();
+          return;
+        }
+
+        checked = true;
+        const expected = mode === "word" ? currentWord : encode(currentWord);
+        const actual = mode === "word"
+          ? answer.trim().toLocaleUpperCase("nb-NO")
+          : normalizeMorse(answer);
+        const correct = mode === "word" ? actual === expected : actual === normalizeMorse(expected);
+
+        if (correct) {
+          setStreak(streak + 1);
+          if (mode === "morse") {
+            morseResult.textContent = "Riktig!";
+            morseResult.className = "field-result";
+            status.hidden = true;
+          } else {
+            status.textContent = `Riktig! Rekke: ${streak}.`;
+            status.className = "status correct";
+          }
+        } else {
+          setStreak(0);
+          if (mode === "morse") {
+            morseResult.textContent = `Riktig svar: ${expected}`;
+            morseResult.className = "field-result incorrect";
+            status.hidden = true;
+          } else {
+            status.textContent = `Feil. Riktig svar var ${expected}.`;
+            status.className = "status incorrect";
+          }
+        }
+
+        (mode === "word" ? plainInput : morseInput).readOnly = true;
+        checkButton.hidden = true;
+        newQuestionButton.hidden = false;
+        newQuestionButton.focus();
+      }
+
+      wordModeButton.addEventListener("click", () => setMode("word"));
+      morseModeButton.addEventListener("click", () => setMode("morse"));
+      document.querySelectorAll(".morse-input-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (mode !== "morse" || checked) return;
+          morseInput.value += button.dataset.morseSymbol;
+          status.textContent = "";
+          status.className = "status";
+          morseInput.focus();
+        });
+      });
+      lengthSelect.addEventListener("change", nextQuestion);
+      checkButton.addEventListener("click", checkAnswer);
+      newQuestionButton.addEventListener("click", nextQuestion);
+      document.querySelectorAll(".answer-input").forEach((input) => {
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" && !event.repeat && !event.isComposing && !checked) {
+            event.preventDefault();
+            checkAnswer();
+          }
+        });
+      });
+
+      streakDisplay.textContent = String(streak);
+      highScoreDisplay.textContent = String(highScore);
+      nextQuestion();
+    })();
+  </script>
+  <script>
+    (() => {
+      const topbar = document.querySelector(".topbar");
+      const menuToggle = document.querySelector(".menu-toggle");
+      const closeMenu = () => {
+        topbar.classList.remove("menu-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Åpne meny");
+      };
+      menuToggle.addEventListener("click", () => {
+        const isOpen = menuToggle.getAttribute("aria-expanded") !== "true";
+        topbar.classList.toggle("menu-open", isOpen);
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "Lukk meny" : "Åpne meny");
+      });
+      topbar.querySelector(".nav").addEventListener("click", (event) => {
+        if (event.target.closest("a")) closeMenu();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2eb">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <title>Morse — Lytte</title>
+  <style>
+    :root {
+      color-scheme: light;
+      scrollbar-gutter: stable;
+      --paper: #f5f2eb;
+      --card: #fffefa;
+      --ink: #1d2927;
+      --muted: #78817b;
+      --line: #e7e4dc;
+      --green: #245b4e;
+      --green-dark: #193f37;
+      --mint: #e8f0e9;
+      --orange: #e87850;
+      --orange-pale: #faeee8;
+      --shadow: 0 18px 48px rgb(34 45 39 / 7%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { overflow-x: clip; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #e87850;
+      outline-offset: 3px;
+    }
+
+    .shell { width: min(900px, calc(100% - 48px)); margin: 0 auto; }
+    .topbar {
+      width: min(1120px, calc(100% - 40px));
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .16em;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      border-radius: 10px;
+      background: var(--green);
+    }
+
+    .brand-mark span { display: block; height: 3px; border-radius: 5px; background: #fff; }
+    .brand-mark span:nth-child(1) { width: 5px; }
+    .brand-mark span:nth-child(2) { width: 13px; }
+    .brand-mark span:nth-child(3) { width: 5px; }
+
+    .nav { display: flex; align-items: center; gap: 30px; }
+    .nav a {
+      color: #647069;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 650;
+      transition: color .18s ease;
+    }
+    .nav a:hover, .nav a[aria-current="page"] { color: var(--green); }
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+    }
+    .menu-toggle span { width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 28px;
+      padding: 55px 0 36px;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 680px;
+      margin-bottom: 15px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(38px, 5.2vw, 61px);
+      font-weight: 500;
+      letter-spacing: -.055em;
+      line-height: 1.04;
+    }
+
+    .hero-copy { max-width: 550px; margin-bottom: 0; color: #707972; font-size: 15px; line-height: 1.7; }
+
+    .today {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgb(255 254 250 / 65%);
+      color: #69736c;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .today-mark { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 4px var(--orange-pale); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 34px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 84px;
+      padding: 16px 19px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+    }
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 12px;
+      background: var(--mint);
+      color: var(--green);
+      font-size: 19px;
+    }
+    .stat:nth-child(2) .stat-icon { background: var(--orange-pale); color: var(--orange); }
+    .stat:nth-child(3) .stat-icon { background: #f1eee5; color: #82744e; }
+    .stat-label { margin-bottom: 4px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .stat-value { margin: 0; font-size: 20px; font-weight: 750; letter-spacing: -.03em; }
+    .stat-value small { color: #89918b; font-size: 11px; font-weight: 600; letter-spacing: 0; }
+
+    .practice-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(270px, .8fr); gap: 18px; margin-top: 40px; }
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .trainer { padding: 25px; }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .panel-heading h2 { margin: 0; font-size: 16px; letter-spacing: -.02em; }
+    .session-tag {
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: var(--mint);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .signal-card {
+      margin-top: 22px;
+      padding: 24px;
+      border-radius: 15px;
+      background: var(--green-dark);
+      color: white;
+      text-align: center;
+    }
+    .signal-caption { margin: 0 0 12px; color: #b7cdc2; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .signal-display { min-height: 38px; margin-bottom: 12px; color: #fff; font-family: Georgia, serif; font-size: 25px; letter-spacing: .12em; }
+    .play-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 41px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 10px;
+      background: white;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 750;
+      transition: transform .18s ease, background .18s ease;
+    }
+    .play-button:hover { transform: translateY(-1px); background: #edf4ed; }
+    .play-icon { font-size: 15px; }
+
+    .question-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 24px 0 12px; }
+    .question-row h3 { margin: 0; font-size: 13px; }
+    .hint-button {
+      padding: 5px 0;
+      border: 0;
+      background: transparent;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .choices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .choice {
+      min-height: 51px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fffefa;
+      color: var(--ink);
+      font-family: Georgia, serif;
+      font-size: 21px;
+      font-weight: 700;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .choice:hover:not(:disabled) { transform: translateY(-2px); border-color: #9ab5a5; background: #f6faf5; }
+    .choice:disabled { cursor: default; }
+    .choice.correct { border-color: #80aa8a; background: #eaf3e9; color: #245b4e; }
+    .choice.incorrect { border-color: #e9aa92; background: #fff0e9; color: #a64e32; }
+    .feedback { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+    .feedback.good { color: var(--green); font-weight: 700; }
+    .feedback.bad { color: #aa5439; font-weight: 700; }
+    .next-button {
+      display: none;
+      width: 100%;
+      min-height: 43px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--green);
+      color: white;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .next-button:hover { background: var(--green-dark); }
+    .next-button.visible { display: block; }
+
+    .side-panel { padding: 25px 22px; }
+    .side-panel h2 { margin-bottom: 6px; font-size: 15px; }
+    .side-intro { margin-bottom: 19px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .setting-label { display: flex; justify-content: space-between; margin-bottom: 11px; color: #56615a; font-size: 11px; font-weight: 700; }
+    .setting-label output { color: var(--green); font-weight: 800; }
+    input[type="range"] { width: 100%; margin: 0 0 5px; accent-color: var(--green); }
+    .range-ends { display: flex; justify-content: space-between; color: #929991; font-size: 10px; }
+    .tip {
+      margin-top: 20px;
+      padding: 13px;
+      border-radius: 12px;
+      background: #f5f2eb;
+      color: #68716a;
+      font-size: 10px;
+      line-height: 1.6;
+    }
+    .tip strong { color: var(--ink); }
+
+    .footer { padding: 18px 0 25px; border-top: 1px solid var(--line); color: #879088; font-size: 10px; text-align: center; }
+
+    @media (max-width: 760px) {
+      .hero { grid-template-columns: 1fr; padding-top: 38px; }
+      .today { justify-self: start; }
+      .practice-grid { grid-template-columns: 1fr; }
+      .side-panel { display: grid; grid-template-columns: 1fr 1fr; column-gap: 22px; }
+      .side-panel > .panel-heading, .side-panel > .side-intro { grid-column: 1 / -1; }
+      .side-panel > .tip { margin-top: 8px; }
+    }
+
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 30px, 900px); }
+      .topbar { min-height: 67px; }
+      .brand { font-size: 13px; }
+      .nav { gap: 14px; }
+      .nav a { font-size: 11px; }
+      .hero { gap: 19px; padding: 33px 0 25px; }
+      h1 { font-size: 42px; }
+      .hero-copy { font-size: 13px; }
+      .stats { gap: 7px; margin-bottom: 20px; }
+      .stat { min-height: 77px; flex-direction: column; align-items: flex-start; gap: 7px; padding: 11px; }
+      .stat-icon { width: 29px; height: 29px; border-radius: 9px; font-size: 15px; }
+      .stat-value { font-size: 17px; }
+      .stat-label { font-size: 9px; }
+      .trainer { padding: 18px; }
+      .signal-card { padding: 20px 13px; }
+      .choices { gap: 7px; }
+      .choice { min-height: 47px; font-size: 19px; }
+      .side-panel { display: block; padding: 20px; }
+      .side-panel > .tip { margin-top: 6px; }
+    }
+    @media (max-width: 700px) {
+      .topbar { position: relative; flex-wrap: wrap; justify-content: space-between; padding: 8px 0; }
+      .menu-toggle { display: flex; }
+      .topbar .nav { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding-top: 8px; }
+      .topbar.menu-open .nav { display: flex; }
+      .topbar .nav a { padding: 12px 10px; border-top: 1px solid var(--line); font-size: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="Lytte.html" aria-label="Morse hjem">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      MORSE
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Åpne meny" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="main-nav" aria-label="Hovedmeny">
+      <a href="Lytte.html#practice" aria-current="page">Lytte</a>
+      <a href="Kodeoversikt.html">Kodeoversikt</a>
+      <a href="Skrive.html">Skrive</a>
+      <a href="Lyn%20trening.html">Lyn trening</a>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="practice-grid" id="practice" aria-label="Morseøving">
+      <article class="panel trainer">
+        <div class="panel-heading">
+          <h2>Lytteøving</h2>
+          <span class="session-tag">Bokstavlyder</span>
+        </div>
+        <div class="signal-card">
+          <p class="signal-caption" id="signal-caption">Lytt til signalet</p>
+          <div class="signal-display" id="signal-display" aria-live="polite">Klar?</div>
+          <button class="play-button" id="play-button" type="button"><span class="play-icon" aria-hidden="true">▶</span><span>Spill av signal</span></button>
+        </div>
+        <div class="question-row">
+          <h3>Hvilken bokstav hørte du?</h3>
+          <button class="hint-button" id="hint-button" type="button" aria-pressed="false">Vis hint</button>
+        </div>
+        <div class="choices" id="choices" role="group" aria-label="Velg bokstaven du hørte"></div>
+        <p class="feedback" id="feedback" aria-live="polite">Trykk på spill av, og velg deretter svaret ditt.</p>
+        <button class="next-button" id="next-button" type="button">Neste signal <span aria-hidden="true">→</span></button>
+      </article>
+
+      <aside class="panel side-panel" aria-label="Øvingsinnstillinger">
+        <div class="panel-heading"><h2>Tilpass øvingen</h2></div>
+        <p class="side-intro">Finn en behagelig hastighet, og øk den gradvis etter hvert som du blir tryggere.</p>
+        <div>
+          <label class="setting-label" for="speed"><span>Signalhastighet</span><output id="speed-output" for="speed">15 ord/min</output></label>
+          <input id="speed" type="range" min="5" max="30" value="15">
+          <div class="range-ends"><span>Sakte · 5</span><span>Raskt · 30</span></div>
+        </div>
+        <div class="tip"><strong>Et lite tips</strong><br>Prøv å høre hver bokstav som en rytme i stedet for å telle prikker og streker. Etter hvert vil mønsteret føles kjent.</div>
+      </aside>
+    </section>
+
+  </main>
+  <script>
+    (() => {
+      "use strict";
+
+      const MORSE = {
+        A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....",
+        I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.", O: "---", P: ".--.",
+        Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+        Y: "-.--", Z: "--..", 0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-",
+        5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----.",
+        ".": ".-.-.-", ",": "--..--", "?": "..--..", "'": ".----.", "!": "-.-.--",
+        "/": "-..-.", "(": "-.--.", ")": "-.--.-", "&": ".-...", ":": "---...",
+        ";": "-.-.-.", "=": "-...-", "+": ".-.-.", "-": "-....-", "_": "..--.-",
+        "\"": ".-..-.", "$": "...-..-", "@": ".--.-.", Æ: ".-.-", Ø: "---.", Å: ".--.-"
+      };
+      const LETTERS = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ"];
+      const STORAGE_KEY = "morse-practice-progress-v1";
+      const defaultProgress = { answered: 0, bestStreak: 0, streak: 0, learned: {}, lastPractice: "" };
+
+      const el = (id) => document.getElementById(id);
+      const playButton = el("play-button");
+      const choicesNode = el("choices");
+      const feedback = el("feedback");
+      const nextButton = el("next-button");
+      const hintButton = el("hint-button");
+      const speedInput = el("speed");
+      const signalDisplay = el("signal-display");
+      const progress = loadProgress();
+      let currentLetter = "";
+      let answered = false;
+      let hintEnabled = false;
+      let audioContext;
+
+      function loadProgress() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          if (!saved || typeof saved !== "object") return { ...defaultProgress };
+          return {
+            ...defaultProgress,
+            ...saved,
+            answered: Number.isFinite(saved.answered) ? saved.answered : 0,
+            bestStreak: Number.isFinite(saved.bestStreak) ? saved.bestStreak : 0,
+            streak: Number.isFinite(saved.streak) ? saved.streak : 0,
+            learned: saved.learned && typeof saved.learned === "object" ? saved.learned : {}
+          };
+        } catch (error) {
+          console.error("Kunne ikke laste inn framgangen i morseøvingen.", error);
+          return { ...defaultProgress };
+        }
+      }
+
+      function saveProgress() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        } catch (error) {
+          console.error("Kunne ikke lagre framgangen i morseøvingen.", error);
+        }
+      }
+
+      function setPlayButtonLabel(label) {
+        playButton.querySelector("span:last-child").textContent = label;
+      }
+
+      function makeRound() {
+        setPlayButtonLabel("Spill av signal");
+        currentLetter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+        const options = [currentLetter];
+        while (options.length < 4) {
+          const candidate = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+          if (!options.includes(candidate)) options.push(candidate);
+        }
+        options.sort(() => Math.random() - 0.5);
+        choicesNode.replaceChildren(...options.map((letter) => {
+          const button = document.createElement("button");
+          button.className = "choice";
+          button.type = "button";
+          button.textContent = letter;
+          button.setAttribute("aria-label", `Velg ${letter}`);
+          button.addEventListener("click", () => submitAnswer(letter, button));
+          return button;
+        }));
+        answered = false;
+        signalDisplay.textContent = "Klar?";
+        el("signal-caption").textContent = "Lytt til signalet";
+        feedback.textContent = "Trykk på spill av, og velg deretter svaret ditt.";
+        feedback.className = "feedback";
+        nextButton.classList.remove("visible");
+        if (hintEnabled) showHint();
+      }
+
+      function showHint() {
+        signalDisplay.textContent = MORSE[currentLetter] || "";
+        el("signal-caption").textContent = "Visuelt hint";
+      }
+
+      function setHintEnabled(enabled) {
+        hintEnabled = enabled;
+        hintButton.setAttribute("aria-pressed", String(enabled));
+        hintButton.textContent = enabled ? "Skjul hint" : "Vis hint";
+        if (enabled) showHint();
+        else {
+          signalDisplay.textContent = answered ? MORSE[currentLetter] : "Klar?";
+          el("signal-caption").textContent = answered ? "Signalmønster" : "Lytt til signalet";
+        }
+      }
+
+      async function playSignal() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+          feedback.textContent = "Lydavspilling støttes ikke i denne nettleseren. Du kan fortsatt bruke det visuelle hintet.";
+          feedback.className = "feedback bad";
+          return;
+        }
+        try {
+          audioContext ||= new AudioContextClass();
+          if (audioContext.state === "suspended") await audioContext.resume();
+          const unit = 1.2 / Number(speedInput.value);
+          const start = audioContext.currentTime + 0.04;
+          let cursor = start;
+          const pattern = MORSE[currentLetter];
+          for (const [index, symbol] of [...pattern].entries()) {
+            const duration = symbol === "." ? unit : unit * 3;
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            oscillator.type = "sine";
+            oscillator.frequency.value = 620;
+            gain.gain.setValueAtTime(0, cursor);
+            gain.gain.linearRampToValueAtTime(0.13, cursor + 0.006);
+            gain.gain.setValueAtTime(0.13, cursor + duration - 0.006);
+            gain.gain.linearRampToValueAtTime(0, cursor + duration);
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+            oscillator.start(cursor);
+            oscillator.stop(cursor + duration + 0.01);
+            cursor += duration + (index < pattern.length - 1 ? unit : 0);
+          }
+          setPlayButtonLabel("Spill av signalet på nytt");
+        } catch (error) {
+          console.error("Kunne ikke spille av morsesignalet.", error);
+          feedback.textContent = "Kunne ikke spille av signalet. Kontroller at lyd er slått på, og prøv igjen.";
+          feedback.className = "feedback bad";
+        }
+      }
+
+      function submitAnswer(letter, selectedButton) {
+        if (answered) return;
+        answered = true;
+        setPlayButtonLabel("Spill av signal");
+        const correct = letter === currentLetter;
+        progress.answered += 1;
+        progress.lastPractice = new Date().toLocaleDateString("en-CA");
+        if (correct) {
+          progress.streak += 1;
+          progress.bestStreak = Math.max(progress.bestStreak, progress.streak);
+          progress.learned[currentLetter] = (progress.learned[currentLetter] || 0) + 1;
+          selectedButton.classList.add("correct");
+          feedback.textContent = progress.learned[currentLetter] >= 3
+            ? `Helt riktig — ${currentLetter} begynner å sitte!`
+            : `Helt riktig — ${currentLetter} er «${MORSE[currentLetter]}».`;
+          feedback.className = "feedback good";
+        } else {
+          progress.streak = 0;
+          selectedButton.classList.add("incorrect");
+          const correctButton = [...choicesNode.children].find((button) => button.textContent === currentLetter);
+          correctButton?.classList.add("correct");
+          feedback.textContent = `Ikke helt — signalet var ${currentLetter} (${MORSE[currentLetter]}). Lytt en gang til.`;
+          feedback.className = "feedback bad";
+        }
+        choicesNode.querySelectorAll("button").forEach((button) => { button.disabled = true; });
+        if (!hintEnabled) {
+          signalDisplay.textContent = MORSE[currentLetter];
+          el("signal-caption").textContent = "Signalmønster";
+        }
+        nextButton.classList.add("visible");
+        saveProgress();
+      }
+
+      playButton.addEventListener("click", playSignal);
+      nextButton.addEventListener("click", makeRound);
+      hintButton.addEventListener("click", () => {
+        setHintEnabled(!hintEnabled);
+      });
+      speedInput.addEventListener("input", () => {
+        el("speed-output").textContent = `${speedInput.value} ord/min`;
+      });
+      makeRound();
+    })();
+  </script>
+  <script>
+    (() => {
+      const topbar = document.querySelector(".topbar");
+      const menuToggle = document.querySelector(".menu-toggle");
+      const closeMenu = () => {
+        topbar.classList.remove("menu-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Åpne meny");
+      };
+      menuToggle.addEventListener("click", () => {
+        const isOpen = menuToggle.getAttribute("aria-expanded") !== "true";
+        topbar.classList.toggle("menu-open", isOpen);
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "Lukk meny" : "Åpne meny");
+      });
+      topbar.querySelector(".nav").addEventListener("click", (event) => {
+        if (event.target.closest("a")) closeMenu();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+      });
+    })();
+  </script>
+</body>
+</html>

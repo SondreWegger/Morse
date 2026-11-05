@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2eb">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <title>Lyn trening</title>
+  <style>
+    :root {
+      color-scheme: light;
+      scrollbar-gutter: stable;
+      --paper: #f5f2eb;
+      --ink: #1d2927;
+      --line: #e7e4dc;
+      --green: #245b4e;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { overflow-x: clip; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    a:focus-visible { outline: 3px solid #e87850; outline-offset: 3px; }
+    .shell { width: min(900px, calc(100% - 48px)); margin: 0 auto; }
+    .topbar {
+      width: min(1120px, calc(100% - 40px));
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .16em;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      border-radius: 10px;
+      background: var(--green);
+    }
+    .brand-mark span { display: block; height: 3px; border-radius: 5px; background: white; }
+    .brand-mark span:nth-child(1), .brand-mark span:nth-child(3) { width: 5px; }
+    .brand-mark span:nth-child(2) { width: 13px; }
+    .nav { display: flex; align-items: center; gap: 30px; }
+    .nav a {
+      color: #647069;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 650;
+      transition: color .18s ease;
+    }
+    .nav a:hover, .nav a[aria-current="page"] { color: var(--green); }
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fffefa;
+    }
+    .menu-toggle span { width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+    main { padding: 48px 0; }
+    .levels {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+      margin: 0 0 34px;
+      padding: 0;
+      list-style: none;
+    }
+    .levels::before {
+      position: absolute;
+      z-index: 0;
+      top: 24px;
+      right: 2%;
+      left: 2%;
+      height: 4px;
+      background: linear-gradient(90deg, #3768df, #30a64c);
+      content: "";
+    }
+    .level-button {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding: 0 2px;
+      border: 0;
+      background: transparent;
+      color: #686d72;
+      font: inherit;
+      cursor: pointer;
+    }
+    .level-number {
+      display: grid;
+      width: 50px;
+      height: 50px;
+      place-items: center;
+      border: 3px solid #3768df;
+      border-radius: 50%;
+      background: var(--paper);
+      color: #3768df;
+      font-size: 38px;
+      font-weight: 750;
+      line-height: 1;
+      transition: background-color .18s ease, color .18s ease;
+    }
+    .level-button[aria-pressed="true"] .level-number {
+      background: #3768df;
+      color: white;
+    }
+    .level-name { font-size: 12px; line-height: 1.25; }
+    .level-letters { font-size: 11px; line-height: 1.3; }
+    .level-button:focus-visible { outline: 3px solid #e87850; outline-offset: 3px; }
+    .selection-status { min-height: 20px; margin: -22px 0 24px; color: #647069; font-size: 12px; text-align: center; }
+    .practice-card {
+      width: min(460px, 100%);
+      margin: 0 auto;
+      padding: 28px 30px 24px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fffefa;
+      box-shadow: 0 18px 48px rgb(34 45 39 / 7%);
+      text-align: center;
+    }
+    .prompt { margin: 0 0 28px; font-size: 20px; }
+    .target-letter {
+      min-height: 74px;
+      margin-bottom: 20px;
+      color: var(--green);
+      font-size: 48px;
+      font-weight: 750;
+      line-height: 1.4;
+    }
+    .answer {
+      width: 100%;
+      min-height: 72px;
+      padding: 14px 18px;
+      border: 3px solid #e1e3e1;
+      border-radius: 13px;
+      background: white;
+      color: var(--ink);
+      font: 24px ui-monospace, SFMono-Regular, Consolas, monospace;
+      letter-spacing: .18em;
+      text-align: center;
+    }
+    .answer.correct {
+      border-color: #16834b;
+      background: #d9f3df;
+      color: #155b35;
+      box-shadow: 0 0 0 3px rgb(22 131 75 / 20%);
+    }
+    .answer.incorrect {
+      border-color: #c62828;
+      background: #ffe0dc;
+      color: #8f1717;
+      box-shadow: 0 0 0 3px rgb(198 40 40 / 20%);
+    }
+    .answer:focus-visible { outline: none; border-color: var(--green); }
+    .answer.correct:focus-visible { border-color: #16834b; }
+    .answer.incorrect:focus-visible { border-color: #c62828; }
+    .answer::placeholder { color: #a7aaa7; font-size: 13px; letter-spacing: normal; }
+    .hint, .feedback { min-height: 22px; margin: 14px 0 6px; color: #647069; font-size: 14px; }
+    .hint[hidden] { display: block; visibility: hidden; }
+    .feedback { margin-top: -12px; margin-bottom: 6px; }
+    .feedback.correct { color: #3a6a5e; font-weight: 700; }
+    .feedback.incorrect { color: #ac5743; }
+    .next-button {
+      min-height: 58px;
+      padding: 0 30px;
+      border: 2px solid #e1e3e1;
+      border-radius: 11px;
+      background: #f8f9f8;
+      color: var(--ink);
+      font: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .next-button:hover { border-color: var(--green); }
+    .next-button:focus-visible { outline: 3px solid #e87850; outline-offset: 3px; }
+    .two-digit-button {
+      display: block;
+      min-height: 42px;
+      margin: 0 auto 10px;
+      padding: 0 18px;
+      border: 1px solid #e1e3e1;
+      border-radius: 9px;
+      background: #f8f9f8;
+      color: #647069;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .hint-toggle-button {
+      display: block;
+      min-height: 42px;
+      margin: 10px auto 10px;
+      padding: 0 18px;
+      border: 1px solid #e1e3e1;
+      border-radius: 9px;
+      background: #f8f9f8;
+      color: #647069;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .morse-input-buttons { display: none; }
+    .two-digit-button[hidden], .hint-toggle-button[hidden] { display: none; }
+    .two-digit-button[aria-pressed="true"], .hint-toggle-button[aria-pressed="true"] {
+      border-color: var(--green);
+      background: #e8f0e9;
+      color: var(--green);
+    }
+    .two-digit-button:focus-visible, .hint-toggle-button:focus-visible {
+      outline: 3px solid #e87850;
+      outline-offset: 3px;
+    }
+    .score-counters { display: flex; justify-content: center; gap: 12px; margin: 20px auto 0; }
+    .score-counter {
+      min-width: 150px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffefa;
+      color: #647069;
+      font-size: 13px;
+      text-align: center;
+    }
+    .score-counter strong { display: block; margin-top: 3px; color: var(--ink); font-size: 22px; }
+    .alphabet-button {
+      display: block;
+      min-height: 48px;
+      margin: 14px auto 0;
+      padding: 0 24px;
+      border: 2px solid #e1e3e1;
+      border-radius: 11px;
+      background: #fffefa;
+      color: var(--ink);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .alphabet-button:hover { border-color: var(--green); }
+    .alphabet-button:focus-visible, .alphabet-close:focus-visible {
+      outline: 3px solid #e87850;
+      outline-offset: 3px;
+    }
+    .alphabet-dialog {
+      width: min(1040px, calc(100% - 24px));
+      max-width: none;
+      max-height: min(920px, calc(100dvh - 24px));
+      padding: 26px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fffefa;
+      color: var(--ink);
+      box-shadow: 0 24px 80px rgb(34 45 39 / 24%);
+    }
+    .alphabet-dialog::backdrop { background: rgb(25 34 32 / 54%); }
+    .alphabet-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .alphabet-heading h2 { margin: 0; font-size: 25px; }
+    .alphabet-close {
+      min-height: 46px;
+      padding: 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #f8f9f8;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .alphabet-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+      max-height: calc(100dvh - 132px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .alphabet-side {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfaf6;
+    }
+    .alphabet-side h3 { margin: 0 0 14px; font-size: 19px; }
+    .alphabet-list {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .alphabet-list.numbers { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .alphabet-list.specials { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .alphabet-entry {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 9px 10px;
+      border: 1px solid #e9e7df;
+      border-radius: 7px;
+      background: white;
+    }
+    .alphabet-entry span { font-size: 17px; font-weight: 750; }
+    .alphabet-entry code {
+      color: #42544e;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+    @media (max-width: 600px) {
+      .shell { width: min(100% - 30px, 900px); }
+      .topbar {
+        width: calc(100% - 24px);
+        min-height: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 0 12px;
+      }
+      .brand { font-size: 13px; }
+      .nav { width: 100%; justify-content: space-between; gap: 6px; }
+      .nav a { font-size: 11px; }
+      main { padding-top: 24px; }
+      .levels {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: 94px;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding: 0;
+      }
+      .levels::before { display: none; }
+      .level-button {
+        height: 100%;
+        gap: 4px;
+        padding: 7px 3px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fffefa;
+      }
+      .level-number { width: 36px; height: 36px; border-width: 2px; font-size: 27px; }
+      .level-name { font-size: 11px; }
+      .level-letters { font-size: 9px; overflow-wrap: anywhere; }
+      .practice-card { padding: 24px 20px; }
+      .morse-input-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 10px 0 14px;
+      }
+      .morse-input-button {
+        min-height: 64px;
+        border: 1px solid #e1e3e1;
+        border-radius: 12px;
+        background: #f8f9f8;
+        color: var(--ink);
+        font: 700 36px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .morse-input-button:active { background: #e8f0e9; }
+      .morse-input-button:focus-visible { outline: 3px solid #e87850; outline-offset: 3px; }
+      .score-counters { gap: 8px; }
+      .score-counter { min-width: 0; flex: 1; padding: 12px 8px; }
+      .alphabet-dialog { padding: 14px; }
+      .alphabet-heading h2 { font-size: 21px; }
+      .alphabet-columns { gap: 8px; max-height: calc(100dvh - 104px); }
+      .alphabet-side { padding: 9px; }
+      .alphabet-side h3 { font-size: 16px; }
+      .alphabet-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+      .alphabet-list.numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .alphabet-list.specials { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .alphabet-entry { gap: 4px; padding: 7px 5px; }
+      .alphabet-entry span { font-size: 14px; }
+      .alphabet-entry code { font-size: 17px; }
+    }
+    @media (max-width: 700px) {
+      .topbar { position: relative; flex-wrap: wrap; justify-content: space-between; padding: 8px 0; }
+      .menu-toggle { display: flex; }
+      .topbar .nav { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding-top: 8px; }
+      .topbar.menu-open .nav { display: flex; }
+      .topbar .nav a { padding: 12px 10px; border-top: 1px solid var(--line); font-size: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="Lytte.html" aria-label="Morse hjem">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      MORSE
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Åpne meny" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="main-nav" aria-label="Hovedmeny">
+      <a href="Lytte.html#practice">Lytte</a>
+      <a href="Kodeoversikt.html">Kodeoversikt</a>
+      <a href="Skrive.html">Skrive</a>
+      <a href="Lyn%20trening.html" aria-current="page">Lyn trening</a>
+    </nav>
+  </header>
+  <main class="shell">
+    <ol class="levels" role="group" aria-label="Velg treningsnivå">
+      <li><button class="level-button" type="button" data-level="0" aria-pressed="true" aria-label="Nivå 1: Grunnleggende, E og T"><span class="level-number">1</span><span class="level-name">Grunnleggende</span><span class="level-letters">E &amp; T</span></button></li>
+      <li><button class="level-button" type="button" data-level="1" aria-pressed="false" aria-label="Nivå 2: Vanlige bokstaver, I M S O"><span class="level-number">2</span><span class="level-name">Vanlige</span><span class="level-letters">I, M, S, O</span></button></li>
+      <li><button class="level-button" type="button" data-level="2" aria-pressed="false" aria-label="Nivå 3: Utvidelse, A N R W"><span class="level-number">3</span><span class="level-name">Utvidelse</span><span class="level-letters">A, N, R, W</span></button></li>
+      <li><button class="level-button" type="button" data-level="3" aria-pressed="false" aria-label="Nivå 4: Videre, D K G U"><span class="level-number">4</span><span class="level-name">Videre</span><span class="level-letters">D, K, G, U</span></button></li>
+      <li><button class="level-button" type="button" data-level="4" aria-pressed="false" aria-label="Nivå 5: Avansert, L P J B C X Y Z"><span class="level-number">5</span><span class="level-name">Avansert</span><span class="level-letters">L, P, J, B, C, X, Y, Z</span></button></li>
+      <li><button class="level-button" type="button" data-level="5" aria-pressed="false" aria-label="Nivå 6: Kompletterende bokstaver, Q F H V"><span class="level-number">6</span><span class="level-name">Kompletterende</span><span class="level-letters">Q, F, H, V</span></button></li>
+      <li><button class="level-button" type="button" data-level="6" aria-pressed="false" aria-label="Nivå 7: Norske bokstaver, Æ Ø Å"><span class="level-number">7</span><span class="level-name">Norske bokstaver</span><span class="level-letters">Æ, Ø, Å</span></button></li>
+      <li><button class="level-button" type="button" data-level="7" aria-pressed="false" aria-label="Nivå 8: Tall, 0 til 9"><span class="level-number">8</span><span class="level-name">Tall</span><span class="level-letters">0–9</span></button></li>
+      <li><button class="level-button" type="button" data-level="8" aria-pressed="false" aria-label="Nivå 9: Spesialtegn, tegnsetting og symboler"><span class="level-number">9</span><span class="level-name">Spesialtegn</span><span class="level-letters">., ? / @...</span></button></li>
+    </ol>
+    <p class="selection-status" id="selection-status" aria-live="polite"></p>
+    <section class="practice-card" aria-labelledby="prompt">
+      <p class="prompt" id="prompt">Skriv morsekoden for:</p>
+      <div class="target-letter" id="target-letter" aria-live="polite"></div>
+      <label for="answer" hidden>Morsekodesvar</label>
+      <input class="answer" id="answer" type="text" inputmode="none" autocomplete="off" autocapitalize="off"
+        placeholder="Skriv . eller −" aria-describedby="hint feedback">
+      <button class="hint-toggle-button" id="hint-toggle-button" type="button" aria-pressed="false">Vis hint</button>
+      <div class="morse-input-buttons" role="group" aria-label="Morseknapper">
+        <button class="morse-input-button" type="button" data-morse-symbol="." aria-label="Legg til prikk">.</button>
+        <button class="morse-input-button" type="button" data-morse-symbol="-" aria-label="Legg til strek">-</button>
+      </div>
+      <p class="hint" id="hint" aria-live="polite" hidden></p>
+      <p class="feedback" id="feedback" aria-live="polite"></p>
+      <button class="two-digit-button" id="two-digit-button" type="button" aria-pressed="false" hidden>Tosifrede tall</button>
+      <button class="next-button" id="next-button" type="button">Neste tegn</button>
+    </section>
+    <section class="score-counters" aria-label="Øvingsresultater">
+      <div class="score-counter">På rad<strong id="streak">0</strong></div>
+      <div class="score-counter">Beste rekke<strong id="high-score">0</strong></div>
+    </section>
+    <button class="alphabet-button" id="alphabet-button" type="button" aria-haspopup="dialog" aria-controls="alphabet-dialog">Alfabetet</button>
+  </main>
+  <dialog class="alphabet-dialog" id="alphabet-dialog" aria-labelledby="alphabet-title">
+    <div class="alphabet-heading">
+      <h2 id="alphabet-title">Morsetabell</h2>
+      <button class="alphabet-close" id="alphabet-close" type="button">Lukk</button>
+    </div>
+    <div class="alphabet-columns">
+      <section class="alphabet-side" aria-labelledby="letters-title">
+        <h3 id="letters-title">Bokstaver</h3>
+        <div class="alphabet-list" id="letter-codes"></div>
+      </section>
+      <section class="alphabet-side" aria-labelledby="numbers-title">
+        <h3 id="numbers-title">Tall</h3>
+        <div class="alphabet-list numbers" id="number-codes"></div>
+      </section>
+      <section class="alphabet-side" aria-labelledby="specials-title">
+        <h3 id="specials-title">Spesialtegn</h3>
+        <div class="alphabet-list specials" id="special-codes"></div>
+      </section>
+    </div>
+  </dialog>
+  <script>
+    (() => {
+      "use strict";
+
+      const MORSE = {
+        A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.",
+        H: "....", I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.",
+        O: "---", P: ".--.", Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-",
+        V: "...-", W: ".--", X: "-..-", Y: "-.--", Z: "--..", Æ: ".-.-",
+        Ø: "---.", Å: ".--.-", 0: "-----", 1: ".----", 2: "..---", 3: "...--",
+        4: "....-", 5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----.",
+        ".": ".-.-.-", ",": "--..--", "?": "..--..", "'": ".----.", "!": "-.-.--",
+        "/": "-..-.", "(": "-.--.", ")": "-.--.-", "&": ".-...", ":": "---...",
+        ";": "-.-.-.", "=": "-...-", "+": ".-.-.", "-": "-....-", "_": "..--.-",
+        "\"": ".-..-.", "$": "...-..-", "@": ".--.-."
+      };
+      const levels = [
+        ["E", "T"],
+        ["I", "M", "S", "O"],
+        ["A", "N", "R", "W"],
+        ["D", "K", "G", "U"],
+        ["L", "P", "J", "B", "C", "X", "Y", "Z"],
+        ["Q", "F", "H", "V"],
+        ["Æ", "Ø", "Å"],
+        ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        [".", ",", "?", "'", "!", "/", "(", ")", "&", ":", ";", "=", "+", "-", "_", "\"", "$", "@"]
+      ];
+      const target = document.getElementById("target-letter");
+      const answer = document.getElementById("answer");
+      const hint = document.getElementById("hint");
+      const hintToggleButton = document.getElementById("hint-toggle-button");
+      const feedback = document.getElementById("feedback");
+      const levelButtons = [...document.querySelectorAll(".level-button")];
+      const selectionStatus = document.getElementById("selection-status");
+      const streakDisplay = document.getElementById("streak");
+      const highScoreDisplay = document.getElementById("high-score");
+      const twoDigitButton = document.getElementById("two-digit-button");
+      const alphabetDialog = document.getElementById("alphabet-dialog");
+      const STREAK_KEY = "morse-lyn-training-streak-v1";
+      const HIGH_SCORE_KEY = "morse-lyn-training-high-score-v1";
+      let streak = loadScore(STREAK_KEY);
+      let highScore = loadScore(HIGH_SCORE_KEY);
+      const selectedLevels = new Set([0]);
+      let currentLetter = "";
+      let characterQueue = [];
+      let hintsEnabled = false;
+      let twoDigitMode = false;
+      let scoredCurrentCharacter = false;
+      let answerChecked = false;
+      let advanceTimer = 0;
+      streakDisplay.textContent = String(streak);
+      highScoreDisplay.textContent = String(highScore);
+
+      function populateMorseTable(containerId, characters) {
+        const container = document.getElementById(containerId);
+        for (const character of characters) {
+          const entry = document.createElement("div");
+          entry.className = "alphabet-entry";
+          const symbol = document.createElement("span");
+          symbol.textContent = character;
+          const code = document.createElement("code");
+          code.textContent = MORSE[character];
+          entry.append(symbol, code);
+          container.append(entry);
+        }
+      }
+
+      populateMorseTable("letter-codes", [..."ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ"]);
+      populateMorseTable("number-codes", [..."0123456789"]);
+      populateMorseTable("special-codes", [".", ",", "?", "'", "!", "/", "(", ")", "&", ":", ";", "=", "+", "-", "_", "\"", "$", "@"]);
+      document.getElementById("alphabet-button").addEventListener("click", () => alphabetDialog.showModal());
+      document.getElementById("alphabet-close").addEventListener("click", () => alphabetDialog.close());
+      alphabetDialog.addEventListener("click", (event) => {
+        if (event.target === alphabetDialog) alphabetDialog.close();
+      });
+
+      function loadScore(key) {
+        try {
+          const value = Number(localStorage.getItem(key));
+          return Number.isInteger(value) && value >= 0 ? value : 0;
+        } catch (error) {
+          console.error("Kunne ikke laste inn øvingsresultatet.", error);
+          return 0;
+        }
+      }
+
+      function saveScore(key, value) {
+        try {
+          localStorage.setItem(key, String(value));
+        } catch (error) {
+          console.error("Kunne ikke lagre øvingsresultatet.", error);
+        }
+      }
+
+      function nextSelectedCharacter() {
+        if (characterQueue.length === 0) {
+          characterQueue = [...new Set([...selectedLevels].flatMap((level) => levels[level]))];
+          for (let index = characterQueue.length - 1; index > 0; index--) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [characterQueue[index], characterQueue[swapIndex]] = [characterQueue[swapIndex], characterQueue[index]];
+          }
+          if (characterQueue.length > 1 && characterQueue[characterQueue.length - 1] === currentLetter) {
+            const swapIndex = Math.floor(Math.random() * (characterQueue.length - 1));
+            [characterQueue[characterQueue.length - 1], characterQueue[swapIndex]] =
+              [characterQueue[swapIndex], characterQueue[characterQueue.length - 1]];
+          }
+        }
+        return characterQueue.pop();
+      }
+
+      function updateScores(correct) {
+        streak = correct ? streak + 1 : 0;
+        if (streak > highScore) {
+          highScore = streak;
+          saveScore(HIGH_SCORE_KEY, highScore);
+        }
+        streakDisplay.textContent = String(streak);
+        highScoreDisplay.textContent = String(highScore);
+        saveScore(STREAK_KEY, streak);
+      }
+
+      function nextCharacter() {
+        window.clearTimeout(advanceTimer);
+        advanceTimer = 0;
+        if (twoDigitMode) {
+          let number;
+          do {
+            number = String(Math.floor(Math.random() * 90) + 10);
+          } while (number === currentLetter);
+          currentLetter = number;
+        } else {
+          currentLetter = nextSelectedCharacter();
+        }
+        target.textContent = currentLetter;
+        const code = [...currentLetter].map((character) => MORSE[character]).join(" ");
+        hint.textContent = `Hint: ${currentLetter} = ${code}`;
+        hint.hidden = !hintsEnabled;
+        answer.value = "";
+        answer.className = "answer";
+        feedback.textContent = "";
+        feedback.className = "feedback";
+        scoredCurrentCharacter = false;
+        answerChecked = false;
+        answer.focus();
+      }
+
+      function selectLevel(level) {
+        if (selectedLevels.has(level) && selectedLevels.size === 1) {
+          selectionStatus.textContent = "Velg minst ett nivå.";
+          return;
+        }
+        selectionStatus.textContent = "";
+        if (selectedLevels.has(level)) selectedLevels.delete(level);
+        else selectedLevels.add(level);
+        if (!selectedLevels.has(6) && twoDigitMode) {
+          twoDigitMode = false;
+          twoDigitButton.setAttribute("aria-pressed", "false");
+        }
+        twoDigitButton.hidden = !selectedLevels.has(6);
+        levelButtons.forEach((button, index) => {
+          button.setAttribute("aria-pressed", String(selectedLevels.has(index)));
+        });
+        currentLetter = "";
+        characterQueue = [];
+        nextCharacter();
+      }
+
+      function checkAnswer(submitted = false) {
+        const normalized = answer.value.replace(/[·•]/g, ".").replace(/[−–—]/g, "-").replace(/\s/g, "");
+        if (!normalized) {
+          if (submitted) {
+            feedback.textContent = "Skriv inn morsekoden først.";
+            feedback.className = "feedback incorrect";
+          }
+          return;
+        }
+        const expected = [...currentLetter].map((character) => MORSE[character]).join("");
+        const correct = normalized === expected;
+        answerChecked = true;
+        if (correct) {
+          answer.className = "answer correct";
+          if (!scoredCurrentCharacter) {
+            scoredCurrentCharacter = true;
+            updateScores(true);
+          }
+        } else {
+          answer.className = "answer incorrect";
+          if (submitted && !scoredCurrentCharacter) updateScores(false);
+        }
+        feedback.textContent = correct ? "Riktig!" : "Ikke helt. Prøv igjen.";
+        feedback.className = `feedback ${correct ? "correct" : "incorrect"}`;
+        if (submitted) advanceTimer = window.setTimeout(nextCharacter, 700);
+      }
+
+      answer.addEventListener("input", () => {
+        answer.value = answer.value.replace(/[^.·•\-−–—\s]/g, "");
+        answerChecked = false;
+        answer.className = "answer";
+        feedback.textContent = "";
+        feedback.className = "feedback";
+      });
+      document.querySelectorAll(".morse-input-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          answer.value += button.dataset.morseSymbol;
+          answer.dispatchEvent(new Event("input", { bubbles: true }));
+          answer.focus();
+        });
+      });
+      answer.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === "Shift") {
+          event.preventDefault();
+          if (!answerChecked) checkAnswer(true);
+        }
+      });
+      document.getElementById("next-button").addEventListener("click", nextCharacter);
+      hintToggleButton.addEventListener("click", () => {
+        hintsEnabled = !hintsEnabled;
+        hintToggleButton.setAttribute("aria-pressed", String(hintsEnabled));
+        hintToggleButton.textContent = hintsEnabled ? "Skjul hint" : "Vis hint";
+        hint.hidden = !hintsEnabled;
+      });
+      twoDigitButton.addEventListener("click", () => {
+        twoDigitMode = !twoDigitMode;
+        twoDigitButton.setAttribute("aria-pressed", String(twoDigitMode));
+        currentLetter = "";
+        nextCharacter();
+      });
+      levelButtons.forEach((button) => {
+        button.addEventListener("click", () => selectLevel(Number(button.dataset.level)));
+      });
+      twoDigitButton.hidden = !selectedLevels.has(6);
+      nextCharacter();
+    })();
+  </script>
+  <script>
+    (() => {
+      const topbar = document.querySelector(".topbar");
+      const menuToggle = document.querySelector(".menu-toggle");
+      const closeMenu = () => {
+        topbar.classList.remove("menu-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Åpne meny");
+      };
+      menuToggle.addEventListener("click", () => {
+        const isOpen = menuToggle.getAttribute("aria-expanded") !== "true";
+        topbar.classList.toggle("menu-open", isOpen);
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "Lukk meny" : "Åpne meny");
+      });
+      topbar.querySelector(".nav").addEventListener("click", (event) => {
+        if (event.target.closest("a")) closeMenu();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+      });
+    })();
+  </script>
+</body>
+</html>

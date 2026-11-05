@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2eb">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <title>Morse — Kodeoversikt</title>
+  <style>
+    :root {
+      color-scheme: light;
+      scrollbar-gutter: stable;
+      --paper: #f5f2eb;
+      --card: #fffefa;
+      --ink: #1d2927;
+      --muted: #78817b;
+      --line: #e7e4dc;
+      --green: #245b4e;
+      --shadow: 0 18px 48px rgb(34 45 39 / 7%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { overflow-x: clip; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    a:focus-visible { outline: 3px solid #e87850; outline-offset: 3px; }
+    .shell { width: min(900px, calc(100% - 48px)); margin: 0 auto; }
+    .topbar {
+      width: min(1120px, calc(100% - 40px));
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .16em;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      border-radius: 10px;
+      background: var(--green);
+    }
+    .brand-mark span { display: block; height: 3px; border-radius: 5px; background: white; }
+    .brand-mark span:nth-child(1), .brand-mark span:nth-child(3) { width: 5px; }
+    .brand-mark span:nth-child(2) { width: 13px; }
+    .nav { display: flex; align-items: center; gap: 30px; }
+    .nav a {
+      color: #647069;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 650;
+      transition: color .18s ease;
+    }
+    .nav a:hover, .nav a[aria-current="page"] { color: var(--green); }
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+    }
+    .menu-toggle span { width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+    main { padding: 48px 0; }
+    .chart-section {
+      overflow: hidden;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 7px; font-size: 18px; }
+    .description { margin: 0 0 17px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .chart-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .chart-cell {
+      display: flex;
+      min-height: 58px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-radius: 8px;
+      background: var(--paper);
+    }
+    .chart-cell strong { font-family: Georgia, serif; font-size: 16.8px; }
+    .chart-cell span { color: #40594a; font-size: 21.6px; font-weight: 800; letter-spacing: .08em; }
+    .footer { padding: 18px 0 25px; border-top: 1px solid var(--line); color: #879088; font-size: 10px; text-align: center; }
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 30px, 900px); }
+      .topbar { min-height: 67px; }
+      .brand { font-size: 13px; }
+      .nav { gap: 14px; }
+      .nav a { font-size: 11px; }
+      main { padding-top: 36px; }
+      .panel { padding: 18px; }
+      .chart-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+    @media (max-width: 440px) {
+      .nav { gap: 9px; }
+      .nav a { font-size: 10px; }
+      .brand { gap: 7px; font-size: 11px; }
+      .chart-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .topbar { position: relative; flex-wrap: wrap; justify-content: space-between; padding: 8px 0; }
+      .menu-toggle { display: flex; }
+      .topbar .nav { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding-top: 8px; }
+      .topbar.menu-open .nav { display: flex; }
+      .topbar .nav a { padding: 12px 10px; border-top: 1px solid var(--line); font-size: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="Lytte.html" aria-label="Morse hjem">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      MORSE
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Åpne meny" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="main-nav" aria-label="Hovedmeny">
+      <a href="Lytte.html#practice">Lytte</a>
+      <a href="Kodeoversikt.html" aria-current="page">Kodeoversikt</a>
+      <a href="Skrive.html">Skrive</a>
+      <a href="Lyn%20trening.html">Lyn trening</a>
+    </nav>
+  </header>
+  <main class="shell">
+    <section class="chart-section" aria-labelledby="chart-title">
+      <h1 id="chart-title">Bokstaver</h1>
+      <p class="description">Morsekoder for det norske alfabetet.</p>
+      <div class="chart-grid" id="letters-grid" aria-label="Morsekoder for bokstaver"></div>
+    </section>
+    <section class="chart-section" aria-labelledby="numbers-title">
+      <h1 id="numbers-title">Tall</h1>
+      <p class="description">Morsekoder for tallene 0 til 9.</p>
+      <div class="chart-grid" id="numbers-grid" aria-label="Morsekoder for tall"></div>
+    </section>
+    <section class="chart-section" aria-labelledby="symbols-title">
+      <h1 id="symbols-title">Spesialtegn</h1>
+      <p class="description">Morsekoder for vanlige spesialtegn.</p>
+      <div class="chart-grid" id="symbols-grid" aria-label="Morsekoder for spesialtegn"></div>
+    </section>
+  </main>
+  <footer class="shell footer">Laget for nysgjerrige ører.</footer>
+  <script>
+    (() => {
+      "use strict";
+      const MORSE = {
+        A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....",
+        I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.", O: "---", P: ".--.",
+        Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+        Y: "-.--", Z: "--..", Æ: ".-.-", Ø: "---.", Å: ".--.-"
+      };
+      const NUMBERS = {
+        0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-",
+        5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----."
+      };
+      const SYMBOLS = {
+        ".": ".-.-.-", ",": "--..--", "?": "..--..", "'": ".----.", "!": "-.-.--",
+        "/": "-..-.", "(": "-.--.", ")": "-.--.-", "&": ".-...", ":": "---...",
+        ";": "-.-.-.", "=": "-...-", "+": ".-.-.", "-": "-....-", "_": "..--.-",
+        "\"": ".-..-.", "$": "...-..-", "@": ".--.-."
+      };
+
+      function renderGrid(gridId, entries) {
+        const grid = document.getElementById(gridId);
+        for (const [characterValue, patternValue] of Object.entries(entries)) {
+          const cell = document.createElement("div");
+          cell.className = "chart-cell";
+          const character = document.createElement("strong");
+          character.textContent = characterValue;
+          const pattern = document.createElement("span");
+          pattern.textContent = patternValue;
+          cell.append(character, pattern);
+          grid.append(cell);
+        }
+      }
+
+      renderGrid("letters-grid", MORSE);
+      renderGrid("numbers-grid", NUMBERS);
+      renderGrid("symbols-grid", SYMBOLS);
+    })();
+  </script>
+  <script>
+    (() => {
+      const topbar = document.querySelector(".topbar");
+      const menuToggle = document.querySelector(".menu-toggle");
+      const closeMenu = () => {
+        topbar.classList.remove("menu-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Åpne meny");
+      };
+      menuToggle.addEventListener("click", () => {
+        const isOpen = menuToggle.getAttribute("aria-expanded") !== "true";
+        topbar.classList.toggle("menu-open", isOpen);
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "Lukk meny" : "Åpne meny");
+      });
+      topbar.querySelector(".nav").addEventListener("click", (event) => {
+        if (event.target.closest("a")) closeMenu();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+      });
+    })();
+  </script>
+</body>
+</html>
