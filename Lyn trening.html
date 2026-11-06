@@ -646,11 +646,11 @@
         selectionStatus.textContent = "";
         if (selectedLevels.has(level)) selectedLevels.delete(level);
         else selectedLevels.add(level);
-        if (!selectedLevels.has(6) && twoDigitMode) {
+        if (!selectedLevels.has(7) && twoDigitMode) {
           twoDigitMode = false;
           twoDigitButton.setAttribute("aria-pressed", "false");
         }
-        twoDigitButton.hidden = !selectedLevels.has(6);
+        twoDigitButton.hidden = !selectedLevels.has(7);
         levelButtons.forEach((button, index) => {
           button.setAttribute("aria-pressed", String(selectedLevels.has(index)));
         });
@@ -728,7 +728,7 @@
       levelButtons.forEach((button) => {
         button.addEventListener("click", () => selectLevel(Number(button.dataset.level)));
       });
-      twoDigitButton.hidden = !selectedLevels.has(6);
+      twoDigitButton.hidden = !selectedLevels.has(7);
       nextCharacter();
     })();
   </script>
